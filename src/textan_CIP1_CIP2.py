@@ -269,10 +269,6 @@ class TextAn(TextAnCommon):
                         line_cleaned = line.lower()
                         oeuvre_content.extend(line_cleaned.split())
 
-                    # on enleve les mots de 2 lettres et moins
-
-
-
                     if self.remove_word_1 and self.remove_word_2:
                         words_filtered = [word for word in oeuvre_content if len(word) > 2]
                     elif self.remove_word_1:
@@ -311,6 +307,9 @@ class TextAn(TextAnCommon):
             #    for ngram, total_frequency in all_ngram_counts.items():
             #        print(f"{ngram}: {total_frequency} for author {auteur}")
 
+            '''if auteur == "Balzac":
+                for ngram_key, total_frequency in all_ngram_counts.items():
+                    print(f"{ngram_key}: {total_frequency} for author {auteur}")'''
 
             # printing a specific ngram for debugging purposes
             # if auteur == "Balzac":
@@ -322,3 +321,7 @@ class TextAn(TextAnCommon):
             most_frequent_ngram = max(all_ngram_counts, key=all_ngram_counts.get)
             highest_frequency = all_ngram_counts[most_frequent_ngram]
             print(f"{most_frequent_ngram}: {highest_frequency} for author {auteur}")
+
+            '''most_frequent_ngram_key = max(all_ngram_counts, key=all_ngram_counts.get)
+            highest_frequency = all_ngram_counts[most_frequent_ngram_key]
+            print(f"{most_frequent_ngram_key}: {highest_frequency} for author {auteur}")'''
