@@ -251,8 +251,74 @@ class TextAn(TextAnCommon):
         #   les mots d'une très longue oeuvre du même auteur. Ce n'est PAS ce qui vous est demandé ici.
 
         # Ces trois lignes ne servent qu'à éliminer un avertissement. Il faut les retirer lorsque le code est complété
-        ngram = self.get_empty_ngram(2)
-        print(ngram)
-        print(self.auteurs)
+        for auteur in self.auteurs:
+            aut_files = self.get_aut_files(auteur)
 
-        return
+            all_ngram_counts = {}
+
+            for oeuvre in aut_files:
+                with open(oeuvre, "r", encoding='utf8') as oeuvre_file:
+                    oeuvre_content = []
+
+                    for line in oeuvre_file:
+                        if not self.keep_ponc:
+                            for ponct in self.PONC:
+                                # la ponctuation est considere comme des espaces
+                                line = line.replace(ponct, ' ')
+
+                        line_cleaned = line.lower()
+                        oeuvre_content.extend(line_cleaned.split())
+
+                    # on enleve les mots de 2 lettres et moins
+
+
+
+                    if self.remove_word_1 and self.remove_word_2:
+                        words_filtered = [word for word in oeuvre_content if len(word) > 2]
+                    elif self.remove_word_1:
+                        words_filtered = [word for word in oeuvre_content if len(word) != 1]
+                    elif self.remove_word_2:
+                        words_filtered = [word for word in oeuvre_content if len(word) != 2]
+                    else:
+                        words_filtered = [word for word in oeuvre_content]
+
+                    # pour generer les ngram
+                    ngrams = [' '.join(words_filtered[i:i + self.ngram]) for i in
+                              range(len(words_filtered) - self.ngram + 1)]
+
+                    # dictionnaire pour les frequences
+                    ngram_counts = {}
+
+                    # pour chaque ngram, si il est present dans ngram_counts, il est incremente de 1,
+                    # sinon il est ajoute dans le dictionnaire avec une frequence de 1
+                    for ngram in ngrams:
+                        ngram_counts[ngram] = ngram_counts.get(ngram, 0) + 1
+
+                    '''for ngram in ngrams:
+                        ngram_key = hash(ngram)
+                        ngram_counts[ngram_key] = ngram_counts.get(ngram_key, 0) + 1'''
+
+                    # pour combiner les ngrams des differentes oeuvres du meme auteur
+                    for ngram, frequency in ngram_counts.items():
+                        all_ngram_counts[ngram] = all_ngram_counts.get(ngram, 0) + frequency
+
+
+            # pour stocker toutes les informations de chaque auteur sans mots_auteurs
+            self.mots_auteurs[auteur] = all_ngram_counts
+
+            # printing ngram of specific author for debugging purposes, not able to display all
+            # if auteur == "Balzac":
+            #    for ngram, total_frequency in all_ngram_counts.items():
+            #        print(f"{ngram}: {total_frequency} for author {auteur}")
+
+
+            # printing a specific ngram for debugging purposes
+            # if auteur == "Balzac":
+            #    target_ngram = "neuvième volume"  # Specify the n-gram you want to print
+            #    target_frequency = all_ngram_counts.get(target_ngram, 0)
+            #    print(f"{target_ngram}: {target_frequency} for author {auteur}")
+
+            # printing most frequent ngrams for all authors
+            most_frequent_ngram = max(all_ngram_counts, key=all_ngram_counts.get)
+            highest_frequency = all_ngram_counts[most_frequent_ngram]
+            print(f"{most_frequent_ngram}: {highest_frequency} for author {auteur}")
