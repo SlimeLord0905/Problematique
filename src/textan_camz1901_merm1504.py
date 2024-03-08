@@ -226,9 +226,9 @@ class TextAn(TextAnCommon):
         # Il faut les retirer lorsque le code est complété
         ngrams = self.mots_auteurs[auteur].items()
         sorted_ngrams = sorted(ngrams, key= lambda item: item[1], reverse=True)
-        ngram_posi_n = sorted_ngrams[n - 1]
+        ngram_posi_n = sorted_ngrams[n - 1][0]
         print(self.auteurs, auteur, n)
-        ngram = [["un", "roman"]]  # Exemple du format de sortie d'un bigramme
+        ngram = [self.ngrams_mot[auteur][ngram_posi_n]]
         return ngram
 
     def analyze(self) -> None:
@@ -280,7 +280,7 @@ class TextAn(TextAnCommon):
 
                         ngram_counts[ngram_key] = ngram_counts.get(ngram_key, 0) + 1
 
-                        ngram_counts2[ngram] = ngram_counts2.get(ngram, 0) + 1
+                        ngram_counts2[ngram_key] = ngram.split()
 
 
 
@@ -288,14 +288,13 @@ class TextAn(TextAnCommon):
                     for ngram, frequency in ngram_counts.items():
                         all_ngram_counts_with_keys[ngram] = all_ngram_counts_with_keys.get(ngram, 0) + frequency
 
-                    for ngram, frequency in ngram_counts2.items():
-                        all_ngram_counts[ngram] = all_ngram_counts.get(ngram, 0) + frequency
+
 
 
 
             # pour stocker toutes les informations de chaque auteur sans mots_auteurs
             self.mots_auteurs[auteur] = all_ngram_counts_with_keys
-            self.ngrams_mot[auteur] = all_ngram_counts
+            self.ngrams_mot[auteur] = ngram_counts2
 
 
             # printing ngram of specific author for debugging purposes, not able to display all - with keys
@@ -322,10 +321,7 @@ class TextAn(TextAnCommon):
             # printing most frequent ngrams for all authors - with keys
 
             most_frequent_ngram_key = max(self.mots_auteurs[auteur], key= self.mots_auteurs[auteur].get)
-            most_frequent_ngram = max(self.ngrams_mot[auteur], key= self.ngrams_mot[auteur].get)
 
             highest_frequency_with_keys = all_ngram_counts_with_keys[most_frequent_ngram_key]
-            highest_frequency = all_ngram_counts[most_frequent_ngram]
 
             print(f"{most_frequent_ngram_key}: {highest_frequency_with_keys} for author {auteur}")
-            print(f"{most_frequent_ngram}: {highest_frequency} for author {auteur}")
