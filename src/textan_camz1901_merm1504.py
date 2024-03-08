@@ -308,18 +308,16 @@ class TextAn(TextAnCommon):
 
             '''target_ngram = "jean valjean"
 
-            for ngram_key, frequency in all_ngram_counts.items():
+            for ngram_key, frequency in all_ngram_counts_with_keys.items():
                 if ngram_key == hash(target_ngram):
-                    print(f"{target_ngram}: {frequency} {ngram_key} for author {auteur}")
+                    print(f"{target_ngram}: {frequency} key:{ngram_key} for author {auteur}")
                     break
             else:
                 print(f"N-gram {target_ngram} not found for author {auteur}")'''
 
 
-            # printing most frequent ngrams for all authors - with words
-            '''most_frequent_ngram = max(all_ngram_counts, key=all_ngram_counts.get)
-            highest_frequency = all_ngram_counts[most_frequent_ngram]
-            print(f"{most_frequent_ngram}: {highest_frequency} for author {auteur}")'''
+
+
 
             # printing most frequent ngrams for all authors - with keys
 
