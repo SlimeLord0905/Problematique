@@ -63,7 +63,6 @@ class TextAn(TextAnCommon):
         super().__init__()
         self.ngrams_mot = {}
 
-
         # Au besoin, ajouter votre code d'initialisation de l'objet de type TextAn lors de sa création
 
         return
@@ -225,6 +224,9 @@ class TextAn(TextAnCommon):
         """
         # Les lignes suivantes ne servent qu'à éliminer un avertissement.
         # Il faut les retirer lorsque le code est complété
+        ngrams = self.mots_auteurs[auteur].items()
+        sorted_ngrams = sorted(ngrams, key= lambda item: item[1], reverse=True)
+        ngram_posi_n = sorted_ngrams[n - 1]
         print(self.auteurs, auteur, n)
         ngram = [["un", "roman"]]  # Exemple du format de sortie d'un bigramme
         return ngram
