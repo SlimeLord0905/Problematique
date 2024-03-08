@@ -223,13 +223,14 @@ class TextAn(TextAnCommon):
         """
         # Les lignes suivantes ne servent qu'à éliminer un avertissement.
         # Il faut les retirer lorsque le code est complété
+        ngrams = self.mots_auteurs[auteur].items()
+        sorted_ngrams = sorted(ngrams, key= lambda item: item[1], reverse=True)
+        ngram_posi_n = sorted_ngrams[n - 1]
         print(self.auteurs, auteur, n)
         ngram = [["un", "roman"]]  # Exemple du format de sortie d'un bigramme
         return ngram
 
     def analyze(self) -> None:
-
-
         for auteur in self.auteurs:
             aut_files = self.get_aut_files(auteur)
 
@@ -256,11 +257,9 @@ class TextAn(TextAnCommon):
                         words_filtered = [word for word in oeuvre_content if len(word) != 2]
                     else:
                         words_filtered = [word for word in oeuvre_content]
-
                     # pour generer les ngram
                     ngrams = [' '.join(words_filtered[i:i + self.ngram]) for i in
                               range(len(words_filtered) - self.ngram + 1)]
-
                     # dictionnaire pour les frequences
                     ngram_counts = {}
 
@@ -281,7 +280,6 @@ class TextAn(TextAnCommon):
 
             # pour stocker toutes les informations de chaque auteur sans mots_auteurs
             self.mots_auteurs[auteur] = all_ngram_counts
-
             # printing ngram of specific author for debugging purposes, not able to display all - with words
             # if auteur == "Balzac":
             #    for ngram, total_frequency in all_ngram_counts.items():
