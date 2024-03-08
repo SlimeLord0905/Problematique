@@ -61,6 +61,8 @@ class TextAn(TextAnCommon):
 
         # Initialisation des champs nécessaires aux fonctions fournies
         super().__init__()
+        self.ngrams_mot = {}
+
 
         # Au besoin, ajouter votre code d'initialisation de l'objet de type TextAn lors de sa création
 
@@ -233,6 +235,7 @@ class TextAn(TextAnCommon):
         for auteur in self.auteurs:
             aut_files = self.get_aut_files(auteur)
 
+            all_ngram_counts_with_keys = {}
             all_ngram_counts = {}
 
             for oeuvre in aut_files:
@@ -263,29 +266,34 @@ class TextAn(TextAnCommon):
 
                     # dictionnaire pour les frequences
                     ngram_counts = {}
+                    ngram_counts2 = {}
 
                     # pour chaque ngram, si il est present dans ngram_counts, il est incremente de 1,
                     # sinon il est ajoute dans le dictionnaire avec une frequence de 1
-                    '''for ngram in ngrams:
-                        ngram_counts[ngram] = ngram_counts.get(ngram, 0) + 1'''
+
 
                     #utilise cette boucle for pour les cles et mettre en commentaire l'autre
                     for ngram in ngrams:
                         ngram_key = hash(ngram)
+
                         ngram_counts[ngram_key] = ngram_counts.get(ngram_key, 0) + 1
+
+                        ngram_counts2[ngram] = ngram_counts2.get(ngram, 0) + 1
+
+
 
                     # pour combiner les ngrams des differentes oeuvres du meme auteur
                     for ngram, frequency in ngram_counts.items():
+                        all_ngram_counts_with_keys[ngram] = all_ngram_counts_with_keys.get(ngram, 0) + frequency
+
+                    for ngram, frequency in ngram_counts2.items():
                         all_ngram_counts[ngram] = all_ngram_counts.get(ngram, 0) + frequency
 
 
-            # pour stocker toutes les informations de chaque auteur sans mots_auteurs
-            self.mots_auteurs[auteur] = all_ngram_counts
 
-            # printing ngram of specific author for debugging purposes, not able to display all - with words
-            # if auteur == "Balzac":
-            #    for ngram, total_frequency in all_ngram_counts.items():
-            #        print(f"{ngram}: {total_frequency} for author {auteur}")
+            # pour stocker toutes les informations de chaque auteur sans mots_auteurs
+            self.mots_auteurs[auteur] = all_ngram_counts_with_keys
+            self.ngrams_mot[auteur] = all_ngram_counts
 
 
             # printing ngram of specific author for debugging purposes, not able to display all - with keys
@@ -293,22 +301,17 @@ class TextAn(TextAnCommon):
                 for ngram_key, total_frequency in all_ngram_counts.items():
                     print(f"{ngram_key}: {total_frequency} for author {auteur}")'''
 
-            # printing a specific ngram for debugging purposes - with words
-            '''if auteur == "Balzac":
-                target_ngram = "neuvième volume"  # Specify the n-gram you want to print
-                target_frequency = all_ngram_counts.get(target_ngram, 0)
-                print(f"{target_ngram}: {target_frequency} for author {auteur}")'''
 
             # printing a specific ngram for debugging purposes - with keys
 
-            target_ngram = "jean valjean"
+            '''target_ngram = "jean valjean"
 
             for ngram_key, frequency in all_ngram_counts.items():
                 if ngram_key == hash(target_ngram):
-                    print(f"{target_ngram}: {frequency} for author {auteur}")
+                    print(f"{target_ngram}: {frequency} {ngram_key} for author {auteur}")
                     break
             else:
-                print(f"N-gram {target_ngram} not found for author {auteur}")
+                print(f"N-gram {target_ngram} not found for author {auteur}")'''
 
 
             # printing most frequent ngrams for all authors - with words
@@ -317,6 +320,12 @@ class TextAn(TextAnCommon):
             print(f"{most_frequent_ngram}: {highest_frequency} for author {auteur}")'''
 
             # printing most frequent ngrams for all authors - with keys
-            '''most_frequent_ngram_key = max(all_ngram_counts, key=all_ngram_counts.get)
-            highest_frequency = all_ngram_counts[most_frequent_ngram_key]
-            print(f"{most_frequent_ngram_key}: {highest_frequency} for author {auteur}")'''
+
+            most_frequent_ngram_key = max(self.mots_auteurs[auteur], key= self.mots_auteurs[auteur].get)
+            most_frequent_ngram = max(self.ngrams_mot[auteur], key= self.ngrams_mot[auteur].get)
+
+            highest_frequency_with_keys = all_ngram_counts_with_keys[most_frequent_ngram_key]
+            highest_frequency = all_ngram_counts[most_frequent_ngram]
+
+            print(f"{most_frequent_ngram_key}: {highest_frequency_with_keys} for author {auteur}")
+            print(f"{most_frequent_ngram}: {highest_frequency} for author {auteur}")
