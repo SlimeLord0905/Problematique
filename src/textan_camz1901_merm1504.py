@@ -211,16 +211,6 @@ class TextAn(TextAnCommon):
 
         return
 
-    def get_ngram_by_key(self, auteur: str, ngram_key: str) -> str:
-        # Check if the author exists in the dictionary
-        if auteur in self.mots_auteurs:
-            # Check if the ngram_key exists in the author's ngrams
-            if ngram_key in self.mots_auteurs[auteur]:
-                return self.mots_auteurs[auteur][ngram_key]
-            else:
-                print(f"Ngram key '{ngram_key}' not found for author '{auteur}'.")
-        else:
-            print(f"Author '{auteur}' not found in the dictionary.")
 
     def get_nth_element(self, auteur: str, n: int) -> [[str]]:
         """Après analyse des textes d'auteurs connus, retourner le n-ième plus fréquent n-gramme de l'auteur indiqué
