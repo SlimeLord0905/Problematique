@@ -241,8 +241,9 @@ class TextAn(TextAnCommon):
         frequencies = sorted(set(item[1] for item in sorted_ngrams_keys), reverse=True)
 
         try :
-            target_frequency = frequencies[n]
+            target_frequency = frequencies[n-1]
         except IndexError:
+            print("index existe pas, n mit a 1 par defaut")
             target_frequency = frequencies[0]
         ngrams_list = []
 
@@ -322,14 +323,14 @@ class TextAn(TextAnCommon):
 
             # printing a specific ngram for debugging purposes - with keys
 
-            target_ngram = "dont les"
+            '''target_ngram = "dont les"
 
             for ngram_key, frequency in all_ngram_counts_with_keys.items():
                 if ngram_key == hash(target_ngram):
                     print(f"{target_ngram}: {frequency} key:{ngram_key} for author {auteur}")
                     break
             else:
-                print(f"N-gram {target_ngram} not found for author {auteur}")
+                print(f"N-gram {target_ngram} not found for author {auteur}")'''
 
             # printing most frequent ngrams for all authors - with keys
 
@@ -340,4 +341,4 @@ class TextAn(TextAnCommon):
             print(f"{most_frequent_ngram_key}: {highest_frequency_with_keys} for author {auteur}")'''
 
             #print(self.ngrams_mot[auteur])
-            print(self.get_nth_element("Balzac", 100))
+        print(self.get_nth_element("Balzac", 234))
