@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
+import math
 """ Ce fichier contient la classe TextAn, à utiliser pour résoudre la problématique.
     C'est un gabarit pour l'application de traitement des fréquences de mots dans les oeuvres d'auteurs divers.
 
@@ -76,9 +76,7 @@ class TextAn(TextAnCommon):
     # Ensuite, selon ce qui est demandé, les fonctions find_author(), gen_text() ou get_nth_element() sont appelées
 
     @staticmethod
-    def dot_product_dict(
-        dict1: dict, dict2: dict, dict1_size: int, dict2_size: int
-    ) -> float:
+    def dot_product_dict(dict1: dict, dict2: dict) -> float:
         """Calcule le produit scalaire NORMALISÉ de deux vecteurs représentés par des dictionnaires
 
         Args :
@@ -94,10 +92,24 @@ class TextAn(TextAnCommon):
         # Les lignes qui suivent ne servent qu'à éliminer un avertissement.
         # Il faut les retirer et les remplacer par du code fonctionnel
         dot_product = 1.0
-        print(dict1_size, dict2_size)
-        if dict1 != dict2:
-            dot_product = 0.0
 
+        len_vec_1 = 0.0
+        for key in dict1.keys():
+            len_vec_1 += dict1[key]*dict1[key]
+        len_vec_2 = 0.0
+        for key in dict2.keys():
+            len_vec_2 += dict2[key]*dict2[key]
+
+        len_vec_1 = math.sqrt(len_vec_1)
+        len_vec_2 = math.sqrt(len_vec_2)
+
+        prod_non_normaliser = 0.0
+        for key in dict1.keys():
+            if key in dict2:
+                prod_non_normaliser += dict1[key] * dict2[key]
+
+        dot_product = prod_non_normaliser/ (len_vec_1*len_vec_2)
+        print('prod: ', dot_product)
         return dot_product
 
     def dot_product_aut(self, auteur1: str, auteur2: str) -> float:
