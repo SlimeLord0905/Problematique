@@ -125,13 +125,7 @@ class TextAn(TextAnCommon):
         Copyright 2023, F. Mailhot et Université de Sherbrooke
         """
 
-        # Les lignes qui suivent ne servent qu'à éliminer un avertissement.
-        # Il faut les retirer et les remplacer par du code fonctionnel
-        dot_product = 0.0
-        print(self)
-        if auteur1 == auteur2:
-            print(auteur1, auteur2)
-            dot_product = 1.0
+        dot_product = self.dot_product_dict(self.mots_auteurs[auteur1], self.mots_auteurs[auteur2])
         return dot_product
 
     def dot_product_dict_aut(self, dict_oeuvre: dict, auteur: str) -> float:
@@ -150,12 +144,7 @@ class TextAn(TextAnCommon):
 
         # Les lignes qui suivent ne servent qu'à éliminer un avertissement.
         # Il faut les retirer et les remplacer par du code fonctionnel
-        dot_product = 0.0
-        print(self)
-        if auteur in dict_oeuvre:
-            print(dict_oeuvre)
-            print(auteur)
-            dot_product = 1.0
+        dot_product =  self.dot_product_dict(self.mots_auteurs[auteur], dict_oeuvre)
         return dot_product
 
     def find_author(self, oeuvre: str) -> []:
