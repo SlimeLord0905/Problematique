@@ -159,24 +159,56 @@ class TextAn(TextAnCommon):
             resultats (Liste[(string, float)]) : Liste de tuples (auteurs, niveau de proximité),
             où la proximité est un nombre entre 0 et 1)
         """
+        auteur_prob = []
+        with open(oeuvre, "r", encoding='utf8') as oeuvre_file:
+            oeuvre_content = []
+            all_ngram_counts_with_keys = {}
 
-        # Les lignes suivantes ne servent qu'à éliminer un avertissement.
-        # Il faut les retirer lorsque le code est complété
-        print(self.auteurs, oeuvre)
-        resultats = [
-            ("Premier_auteur", 0.1234),
-            ("Deuxième_auteur", 0.1123),
-        ]  # Exemple du format des sorties
+            for line in oeuvre_file:
+                if not self.keep_ponc:
+                    for ponct in self.PONC:
+                        # la ponctuation est considere comme des espaces
+                        line = line.replace(ponct, ' ')
 
-        # Ajouter votre code pour déterminer la proximité du fichier passé en paramètre avec chacun des auteurs
-        # Retourner la liste des auteurs, chacun avec sa proximité au fichier inconnu
-        # Plus la proximité est grande, plus proche l'oeuvre inconnue est des autres écrits d'un auteur
-        #   Le produit scalaire entre le vecteur représentant les oeuvres d'un auteur
-        #       et celui associé au texte inconnu pourrait s'avérer intéressant...
-        #   Le produit scalaire devrait être normalisé avec la taille du vecteur associé au texte inconnu :
-        #   proximité = (A dot product B) / (|A| |B|)   où A est le vecteur du texte inconnu et B est celui d'un auteur,
-        #           "dot product" est le produit scalaire, et |X| est la norme (longueur) du vecteur X
+                line_cleaned = line.lower()
+                oeuvre_content.extend(line_cleaned.split())
 
+            if self.remove_word_1 and self.remove_word_2:
+                words_filtered = [word for word in oeuvre_content if len(word) > 2]
+            elif self.remove_word_1:
+                words_filtered = [word for word in oeuvre_content if len(word) != 1]
+            elif self.remove_word_2:
+                words_filtered = [word for word in oeuvre_content if len(word) != 2]
+            else:
+                words_filtered = [word for word in oeuvre_content]
+
+            # pour generer les ngram
+            ngrams = [' '.join(words_filtered[i:i + self.ngram]) for i in
+                      range(len(words_filtered) - self.ngram + 1)]
+
+            # dictionnaire pour les frequences
+            ngram_counts = {}
+            ngram_counts2 = {}
+
+            # pour chaque ngram, si il est present dans ngram_counts, il est incremente de 1,
+            # sinon il est ajoute dans le dictionnaire avec une frequence de 1
+
+            # utilise cette boucle for pour les cles et mettre en commentaire l'autre
+            for ngram in ngrams:
+                ngram_key = hash(ngram)
+
+                ngram_counts[ngram_key] = ngram_counts.get(ngram_key, 0) + 1
+
+                ngram_counts2[ngram_key] = ngram.split()
+
+            # pour combiner les ngrams des differentes oeuvres du meme auteur
+            for ngram, frequency in ngram_counts.items():
+                all_ngram_counts_with_keys[ngram] = all_ngram_counts_with_keys.get(ngram, 0) + frequency
+    # pour stocker toutes les informations de chaque auteur sans mots_auteurs
+        for auteur in self.auteurs:
+            auteur_prob.append((auteur, self.dot_product_dict_aut(all_ngram_counts_with_keys, auteur )))
+
+        resultats = auteur_prob
         return resultats
 
     def gen_text_all(self, taille: int, textname: str) -> None:
