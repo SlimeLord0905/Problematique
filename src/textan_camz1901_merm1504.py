@@ -229,35 +229,36 @@ class TextAn(TextAnCommon):
             void : ne retourne rien, le texte produit doit être écrit dans le fichier "textname"
         """
 
-        ngrams, frequencies = zip(*self.big.items())
+        sum_frequencies = sum(self.big.values())
 
-        # Calculate the cumulative sum of frequencies
-        cumulative_sum = list(accumulate(frequencies))
+        cumulative_sum = 0
+        distribution = [(cumulative_sum := cumulative_sum + count / sum_frequencies, ngram) for ngram, count in
+                        self.big.items()]
 
-        # Initialize an empty list to store the generated text
+
         generated_text = []
 
-        # Main loop to generate text
         for _ in range(math.ceil(taille / self.ngram)):
-            # Generate a random number in the range of the cumulative sum
-            random_num = random.uniform(0, cumulative_sum[-1])
+            # Generate a random number in the range [0, 1)
+            random_num = random.random()
 
-            # Find the index where the random number falls in the cumulative sum
-            index = bisect.bisect_left(cumulative_sum, random_num)
+            chosen_ngram = None
+            for prob, ngram in distribution:
+                if prob >= random_num:
+                    chosen_ngram = ngram
+                    break
 
-            # Get the chosen ngram
-            chosen_ngram = ngrams[index]
-
-            # Append the chosen ngram to the generated text
             generated_text.append(chosen_ngram)
 
             # Add a newline character every 12 ngrams
             if (len(generated_text) * self.ngram) % 12 == 0:
                 generated_text.append('\n')
 
-        # Write the generated text to a file
+            # Write the generated text to a file
         with open(textname, "w", encoding='utf8') as text_file:
             text_file.write(" ".join(generated_text))
+
+
 
     def gen_text_auteur(self, auteur: str, taille: int, textname: str) -> None:
         """Après analyse des textes d'auteurs connus, produire un texte selon des statistiques d'un auteur
@@ -278,21 +279,35 @@ class TextAn(TextAnCommon):
             print(f"Author '{auteur}' not found.")
             return ""
 
+        sum_frequencies = sum(self.weights[auteur].values())
+
+        cumulative_sum = 0
+        distribution = [(cumulative_sum := cumulative_sum + count/sum_frequencies, ngram) for ngram, count in
+                        self.weights[auteur].items()]
+
         generated_text = []
 
-        ngrams, frequencies = zip(*self.weights[auteur].items())
+        # Main loop to generate text
+        for _ in range(math.ceil(taille / self.ngram)):
+            # Generate a random number in the range [0, 1)
+            random_num = random.random()
 
+            # Find the chosen ngram based on cumulative probabilities
+            chosen_ngram = None
 
-        for _ in range(math.ceil(taille/self.ngram)):
-            # Use weights to calculate probabilities based on frequencies
+            for prob, ngram in distribution:
+                if prob >= random_num:
+                    chosen_ngram = ngram
+                    break
 
-            chosen_ngram = random.choices(ngrams, weights=frequencies, k=1)[0]
+            # Append the chosen ngram to the generated text
             generated_text.append(chosen_ngram)
 
-
-            if (len(generated_text)*self.ngram) % 12 == 0:
+            # Add a newline character every 12 ngrams
+            if (len(generated_text) * self.ngram) % 12 == 0:
                 generated_text.append('\n')
 
+            # Write the generated text to a file
         with open(textname, "w", encoding='utf8') as text_file:
             text_file.write(" ".join(generated_text))
 
