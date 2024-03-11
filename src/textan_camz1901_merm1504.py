@@ -5,6 +5,7 @@ import math
 import random
 from itertools import accumulate
 import bisect
+
 """ Ce fichier contient la classe TextAn, à utiliser pour résoudre la problématique.
     C'est un gabarit pour l'application de traitement des fréquences de mots dans les oeuvres d'auteurs divers.
 
@@ -228,12 +229,6 @@ class TextAn(TextAnCommon):
             void : ne retourne rien, le texte produit doit être écrit dans le fichier "textname"
         """
 
-        # Ce print ne sert qu'à éliminer un avertissement. Il doit être retiré lorsque le code est complété
-
-
-        # Calculate the total sum of frequencies
-
-
         ngrams, frequencies = zip(*self.big.items())
 
         # Calculate the cumulative sum of frequencies
@@ -287,7 +282,6 @@ class TextAn(TextAnCommon):
 
         ngrams, frequencies = zip(*self.weights[auteur].items())
 
-        #print(max(frequencies))
 
         for _ in range(math.ceil(taille/self.ngram)):
             # Use weights to calculate probabilities based on frequencies
@@ -295,8 +289,6 @@ class TextAn(TextAnCommon):
             chosen_ngram = random.choices(ngrams, weights=frequencies, k=1)[0]
             generated_text.append(chosen_ngram)
 
-            #chosen_weight = self.weights[auteur][chosen_ngram]
-            #print(chosen_weight)
 
             if (len(generated_text)*self.ngram) % 12 == 0:
                 generated_text.append('\n')
