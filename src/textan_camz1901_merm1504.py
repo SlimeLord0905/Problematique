@@ -68,9 +68,9 @@ class TextAn(TextAnCommon):
         self.ngrams_mot = {}
         self.weights = {}
         self.big = {}
-        self.analyze()
+        #self.analyze() - se fait automatiquement dans test_textan
 
-        # Au besoin, ajouter votre code d'initialisation de l'objet de type TextAn lors de sa création
+
 
         return
 
@@ -96,8 +96,6 @@ class TextAn(TextAnCommon):
         Copyright 2023, F. Mailhot et Université de Sherbrooke
         """
 
-        # Les lignes qui suivent ne servent qu'à éliminer un avertissement.
-        # Il faut les retirer et les remplacer par du code fonctionnel
         dot_product = 1.0
 
         len_vec_1 = 0.0
@@ -166,6 +164,7 @@ class TextAn(TextAnCommon):
             resultats (Liste[(string, float)]) : Liste de tuples (auteurs, niveau de proximité),
             où la proximité est un nombre entre 0 et 1)
         """
+        print(f"Comparaison de {oeuvre}")
         auteur_prob = []
         with open(oeuvre, "r", encoding='utf8') as oeuvre_file:
             oeuvre_content = []
@@ -234,11 +233,11 @@ class TextAn(TextAnCommon):
         cumulative_sum = 0
         distribution = [(cumulative_sum := cumulative_sum + count / sum_frequencies, ngram) for ngram, count in self.big.items()]
 
-
+        print("Generation texte tout")
         generated_text = []
-
+        i = 0
         for _ in range(math.ceil(taille / self.ngram)):
-            # Generate a random number in the range [0, 1)
+
             random_num = random.random()
 
             chosen_ngram = None
@@ -248,12 +247,14 @@ class TextAn(TextAnCommon):
                     break
 
             generated_text.append(chosen_ngram)
+            i += self.ngram
 
-            # Add a newline character every 12 ngrams
-            if (len(generated_text) * self.ngram) % 12 == 0:
+
+            if i >= 12:
                 generated_text.append('\n')
+                i = 0
 
-            # Write the generated text to a file
+
         with open(textname, "w", encoding='utf8') as text_file:
             text_file.write(" ".join(generated_text))
 
@@ -279,18 +280,17 @@ class TextAn(TextAnCommon):
             return
 
         sum_frequencies = sum(self.weights[auteur].values())
-
+        print(f"Generation texte {auteur}")
         cumulative_sum = 0
         distribution = [(cumulative_sum := cumulative_sum + count/sum_frequencies, ngram) for ngram, count in self.weights[auteur].items()]
 
         generated_text = []
+        i = 0
 
-        # Main loop to generate text
         for _ in range(math.ceil(taille / self.ngram)):
-            # Generate a random number in the range [0, 1)
+
             random_num = random.random()
 
-            # Find the chosen ngram based on cumulative probabilities
             chosen_ngram = None
 
             for prob, ngram in distribution:
@@ -298,14 +298,14 @@ class TextAn(TextAnCommon):
                     chosen_ngram = ngram
                     break
 
-            # Append the chosen ngram to the generated text
             generated_text.append(chosen_ngram)
+            i += self.ngram
 
-            # Add a newline character every 12 ngrams
-            if (len(generated_text) * self.ngram) % 12 == 0:
+
+            if i >= 12:
                 generated_text.append('\n')
+                i = 0
 
-            # Write the generated text to a file
         with open(textname, "w", encoding='utf8') as text_file:
             text_file.write(" ".join(generated_text))
 
@@ -321,10 +321,8 @@ class TextAn(TextAnCommon):
             ngram (List[Liste[string]]) : Liste de liste de mots composant le n-gramme recherché
             (il est possible qu'il y ait plus d'un n-gramme au même rang)
         """
-        # Les lignes suivantes ne servent qu'à éliminer un avertissement.
-        # Il faut les retirer lorsque le code est complété
 
-        ngrams = self.mots_auteurs[auteur].items()
+        ngrams = self.weights[auteur].items()
         sorted_ngrams_keys = sorted(ngrams, key=lambda item: item[1], reverse=True)
         frequencies = sorted(set(item[1] for item in sorted_ngrams_keys), reverse=True)
 
@@ -337,16 +335,20 @@ class TextAn(TextAnCommon):
 
         for ngram_key, frequency in sorted_ngrams_keys:
             if frequency == target_frequency:
-                if ngram_key in self.ngrams_mot[auteur]:
-                    ngram = self.ngrams_mot[auteur][ngram_key]
-                    ngrams_list.append(ngram)
+
+                try:
+
+                    words = ngram_key.split()
+                    ngrams_list.append(words)
+                except KeyError:
+                    print(f"KeyError: Key '{ngram_key}' pas trouve")
 
         return ngrams_list
 
     def analyze(self) -> None:
 
         all = {}
-
+        print("Analyse des textes")
         for auteur in self.auteurs:
             aut_files = self.get_aut_files(auteur)
 
@@ -416,6 +418,7 @@ class TextAn(TextAnCommon):
 
             # pour stocker toutes les informations de chaque auteur sans mots_auteurs
             self.weights[auteur] = all_ngram_counts
+            self.mots_auteurs[auteur] = {}
             self.mots_auteurs[auteur] = all_ngram_counts_with_keys
             self.ngrams_mot[auteur] = ngram_counts2
             self.big = all
@@ -427,6 +430,11 @@ class TextAn(TextAnCommon):
             max_frequency = all_ngram_counts[max_ngram]
             print(
                 f"For author {auteur}, the n-gram with the highest frequency is '{max_ngram}' with a frequency of {max_frequency}")'''
+            '''selected_ngrams = [ngram for ngram, frequency in all_ngram_counts.items() if frequency >= 2]
+
+            # Print the selected n-grams
+            for ngram in selected_ngrams:
+                print(f"For author {auteur}, the n-gram '{ngram}' has a frequency of {all_ngram_counts[ngram]}")'''
 
             # printing ngram of specific author for debugging purposes, not able to display all - with keys
             '''if auteur == "Balzac":
@@ -436,14 +444,7 @@ class TextAn(TextAnCommon):
 
             # printing a specific ngram for debugging purposes - with keys
 
-            '''target_ngram = "jean valjean"
 
-            for ngram_key, frequency in all_ngram_counts_with_keys.items():
-                if ngram_key == hash(target_ngram):
-                    print(f"{target_ngram}: {frequency} key:{ngram_key} for author {auteur}")
-                    break
-            else:
-                print(f"N-gram {target_ngram} not found for author {auteur}")'''
 
             # printing most frequent ngrams for all authors - with keys'''
 
