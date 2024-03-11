@@ -3,7 +3,7 @@
 
 import math
 import random
-import itertools
+from itertools import accumulate
 import bisect
 """ Ce fichier contient la classe TextAn, à utiliser pour résoudre la problématique.
     C'est un gabarit pour l'application de traitement des fréquences de mots dans les oeuvres d'auteurs divers.
@@ -67,6 +67,7 @@ class TextAn(TextAnCommon):
         self.ngrams_mot = {}
         self.weights = {}
         self.big = {}
+        self.analyze()
 
         # Au besoin, ajouter votre code d'initialisation de l'objet de type TextAn lors de sa création
 
@@ -231,12 +232,17 @@ class TextAn(TextAnCommon):
 
 
         # Calculate the total sum of frequencies
-        self.analyze()
+
 
         ngrams, frequencies = zip(*self.big.items())
-        cumulative_sum = list(itertools.accumulate(frequencies))
 
+        # Calculate the cumulative sum of frequencies
+        cumulative_sum = list(accumulate(frequencies))
+
+        # Initialize an empty list to store the generated text
         generated_text = []
+
+        # Main loop to generate text
         for _ in range(math.ceil(taille / self.ngram)):
             # Generate a random number in the range of the cumulative sum
             random_num = random.uniform(0, cumulative_sum[-1])
@@ -247,11 +253,14 @@ class TextAn(TextAnCommon):
             # Get the chosen ngram
             chosen_ngram = ngrams[index]
 
+            # Append the chosen ngram to the generated text
             generated_text.append(chosen_ngram)
 
+            # Add a newline character every 12 ngrams
             if (len(generated_text) * self.ngram) % 12 == 0:
                 generated_text.append('\n')
 
+        # Write the generated text to a file
         with open(textname, "w", encoding='utf8') as text_file:
             text_file.write(" ".join(generated_text))
 
@@ -268,7 +277,7 @@ class TextAn(TextAnCommon):
         """
 
         # Ce print ne sert qu'à éliminer un avertissement. Il doit être retiré lorsque le code est complété
-        self.analyze()
+
 
         if auteur not in self.auteurs:
             print(f"Author '{auteur}' not found.")
