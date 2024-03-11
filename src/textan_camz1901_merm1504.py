@@ -228,35 +228,30 @@ class TextAn(TextAnCommon):
             void : ne retourne rien, le texte produit doit être écrit dans le fichier "textname"
         """
 
-        sum_frequencies = sum(self.big.values())
 
-        cumulative_sum = 0
-        distribution = [(cumulative_sum := cumulative_sum + count / sum_frequencies, ngram) for ngram, count in self.big.items()]
+        ngrams, weights = zip(*self.big.items())
 
         print("Generation texte tout")
-        generated_text = []
-        i = 0
-        for _ in range(math.ceil(taille / self.ngram)):
+        generated_text = random.choices(ngrams, weights=weights, k=math.ceil(taille/self.ngram))
 
-            random_num = random.random()
-
-            chosen_ngram = None
-            for prob, ngram in distribution:
-                if prob >= random_num:
-                    chosen_ngram = ngram
-                    break
-
-            generated_text.append(chosen_ngram)
-            i += self.ngram
-
-
-            if i >= 12:
-                generated_text.append('\n')
-                i = 0
-
-
+        if self.ngram in {1, 2, 3, 4, 6, 12}:
+            generated_text = [
+                ngram + ('\n' if (i + 1)*self.ngram % 12 == 0 else ' ')
+                for i, ngram in enumerate(generated_text)
+            ]
+        elif self.ngram in {5, 7, 8, 9}:
+            print("test")
+            generated_text = [
+                ngram + ('\n' if (i + 1) % 2 == 0 else ' ')
+                for i, ngram in enumerate(generated_text)
+            ]
+        else:
+            generated_text = [
+                ngram + '\n'
+                for i, ngram in enumerate(generated_text)
+            ]
         with open(textname, "w", encoding='utf8') as text_file:
-            text_file.write(" ".join(generated_text))
+            text_file.write("".join(generated_text))
 
 
 
@@ -279,35 +274,31 @@ class TextAn(TextAnCommon):
             print(f"Author '{auteur}' not found.")
             return
 
-        sum_frequencies = sum(self.weights[auteur].values())
+
+        ngrams, weights = zip(*self.weights[auteur].items())
+
         print(f"Generation texte {auteur}")
-        cumulative_sum = 0
-        distribution = [(cumulative_sum := cumulative_sum + count/sum_frequencies, ngram) for ngram, count in self.weights[auteur].items()]
+        generated_text = random.choices(ngrams, weights=weights, k=math.ceil(taille/self.ngram))
 
-        generated_text = []
-        i = 0
-
-        for _ in range(math.ceil(taille / self.ngram)):
-
-            random_num = random.random()
-
-            chosen_ngram = None
-
-            for prob, ngram in distribution:
-                if prob >= random_num:
-                    chosen_ngram = ngram
-                    break
-
-            generated_text.append(chosen_ngram)
-            i += self.ngram
-
-
-            if i >= 12:
-                generated_text.append('\n')
-                i = 0
-
+        if self.ngram in {1, 2, 3, 4, 6, 12}:
+            generated_text = [
+                ngram + ('\n' if (i + 1) * self.ngram % 12 == 0 else ' ')
+                for i, ngram in enumerate(generated_text)
+            ]
+        elif self.ngram in {5, 7, 8, 9}:
+            print("test")
+            generated_text = [
+                ngram + ('\n' if (i + 1) % 2 == 0 else ' ')
+                for i, ngram in enumerate(generated_text)
+            ]
+        else:
+            generated_text = [
+                ngram + '\n'
+                for i, ngram in enumerate(generated_text)
+            ]
         with open(textname, "w", encoding='utf8') as text_file:
-            text_file.write(" ".join(generated_text))
+            text_file.write("".join(generated_text))
+
 
 
     def get_nth_element(self, auteur: str, n: int) -> [[str]]:
