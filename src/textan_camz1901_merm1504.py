@@ -232,8 +232,7 @@ class TextAn(TextAnCommon):
         sum_frequencies = sum(self.big.values())
 
         cumulative_sum = 0
-        distribution = [(cumulative_sum := cumulative_sum + count / sum_frequencies, ngram) for ngram, count in
-                        self.big.items()]
+        distribution = [(cumulative_sum := cumulative_sum + count / sum_frequencies, ngram) for ngram, count in self.big.items()]
 
 
         generated_text = []
@@ -277,13 +276,12 @@ class TextAn(TextAnCommon):
 
         if auteur not in self.auteurs:
             print(f"Author '{auteur}' not found.")
-            return ""
+            return
 
         sum_frequencies = sum(self.weights[auteur].values())
 
         cumulative_sum = 0
-        distribution = [(cumulative_sum := cumulative_sum + count/sum_frequencies, ngram) for ngram, count in
-                        self.weights[auteur].items()]
+        distribution = [(cumulative_sum := cumulative_sum + count/sum_frequencies, ngram) for ngram, count in self.weights[auteur].items()]
 
         generated_text = []
 
