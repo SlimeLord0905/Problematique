@@ -233,18 +233,21 @@ class TextAn(TextAnCommon):
         # Calculate the total sum of frequencies
         self.analyze()
 
-        generated_text = []
-
         ngrams, frequencies = zip(*self.big.items())
+        cumulative_sum = list(itertools.accumulate(frequencies))
 
-        # print(max(frequencies))
-
+        generated_text = []
         for _ in range(math.ceil(taille / self.ngram)):
-            # Use weights to calculate probabilities based on frequencies
+            # Generate a random number in the range of the cumulative sum
+            random_num = random.uniform(0, cumulative_sum[-1])
 
-            chosen_ngram = random.choices(ngrams, weights=frequencies, k=1)[0]
+            # Find the index where the random number falls in the cumulative sum
+            index = bisect.bisect_left(cumulative_sum, random_num)
+
+            # Get the chosen ngram
+            chosen_ngram = ngrams[index]
+
             generated_text.append(chosen_ngram)
-
 
             if (len(generated_text) * self.ngram) % 12 == 0:
                 generated_text.append('\n')
