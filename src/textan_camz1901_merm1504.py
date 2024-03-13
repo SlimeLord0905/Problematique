@@ -64,13 +64,10 @@ class TextAn(TextAnCommon):
 
         # Initialisation des champs nécessaires aux fonctions fournies
         super().__init__()
-        #self.ngrams_mot = {}
+
         self.big = {}
         self.markov = {}
         self.markov_big = {}
-
-
-
 
         return
 
@@ -148,7 +145,7 @@ class TextAn(TextAnCommon):
         """
         print("call de dot_product_dict_aut")
 
-        dot_product =  self.dot_product_dict(self.mots_auteurs[auteur], dict_oeuvre)
+        dot_product = self.dot_product_dict(self.mots_auteurs[auteur], dict_oeuvre)
         return dot_product
 
     def find_author(self, oeuvre: str) -> []:
@@ -196,8 +193,6 @@ class TextAn(TextAnCommon):
 
             # pour chaque ngram, si il est present dans ngram_counts, il est incremente de 1,
             # sinon il est ajoute dans le dictionnaire avec une frequence de 1
-
-            # utilise cette boucle for pour les cles et mettre en commentaire l'autre
             for ngram in ngrams:
 
                 ngram_counts[ngram] = ngram_counts.get(ngram, 0) + 1
@@ -205,12 +200,18 @@ class TextAn(TextAnCommon):
             # pour combiner les ngrams des differentes oeuvres du meme auteur
             for ngram, frequency in ngram_counts.items():
                 all_ngram_counts[ngram] = all_ngram_counts.get(ngram, 0) + frequency
-    # pour stocker toutes les informations de chaque auteur sans mots_auteurs
+
         for auteur in self.auteurs:
-            auteur_prob.append((auteur, self.dot_product_dict_aut(all_ngram_counts, auteur )))
+            auteur_prob.append((auteur, self.dot_product_dict_aut(all_ngram_counts, auteur)))
 
         resultats = auteur_prob
         return resultats
+
+    '''la generation de texte se fait avec une chaine de markov, les cles du dcitonnaire sont le ngram courant
+    tandis que les valeurs sont les ngrams prochains possibles, un de ces derniers est selectionnes et il devient
+    par la suite le ngram courant, cela continue jusqu'a taille, pour generer un text avec un n eleve, etant donne qu'une 
+    bonne partie des ngrams ont une frequence de 1, il y a souvent un seul ngram prochain possible, 
+    par consequent, la chaine de markov ne fait que repeter un bout de texte consecutif'''
 
     def gen_text_all(self, taille: int, textname: str) -> None:
         """Après analyse des textes d'auteurs connus, produire un texte selon des statistiques de l'ensemble des auteurs
@@ -223,57 +224,28 @@ class TextAn(TextAnCommon):
             void : ne retourne rien, le texte produit doit être écrit dans le fichier "textname"
         """
         print("Generation texte tout")
-        '''if "jean" in self.markov_big:
-            print(f'Content of markov[auteur] when the key is "jean":')
-            print(self.markov_big["jean"])
-            print(sum(self.markov_big["jean"].values()))'''
 
+        generated_text = []
+        ngram_initial = random.choice(list(self.markov_big.keys()))
+        ngram_courant = ngram_initial
+        generated_text.append(ngram_courant)
+        word_count = self.ngram
 
-        if self.ngram != 1:
-            #self.ngram += 1
-            print(self.ngram)
-            generated_text = []
-            etat_courant = random.choice(list(self.markov_big.keys()))
-            generated_text.append(etat_courant)
+        for _ in range(math.ceil((taille - 1)/self.ngram)):
+            if ngram_courant not in self.markov_big:
+                ngram_courant = random.choice(list(self.markov_big.keys()))
+            next_word_probs = self.markov_big[ngram_courant]
+            next_word = random.choices(list(next_word_probs.keys()), weights=list(next_word_probs.values()))[0]
+            generated_text.append(next_word)
+            ngram_courant = next_word
+            word_count += self.ngram
 
-            for _ in range(math.ceil((taille - 1) / (self.ngram-1))):
-                if etat_courant.split()[-1] in self.markov_big:
-                    next_word_probs = self.markov_big[etat_courant.split()[-1]]
-
-                    # Choose the next word based on probabilities
-                    next_word = random.choices(list(next_word_probs.keys()), weights=list(next_word_probs.values()))[0]
-                    generated_text.append(next_word)
-                    '''if _ < 5:
-                        print(generated_text)'''
-
-                    # Update the current state for the next iteration
-                    etat_courant = etat_courant.split()[-1] + ' ' + next_word
-                    #print(etat_courant)
-                else:
-                    break
+            if word_count > 15:
+                generated_text.append('\n')
+                word_count = 0
 
             with open(textname, "w", encoding='utf8') as text_file:
-                for i, word in enumerate(generated_text):
-                    text_file.write(word)
-                    if (i + 1) % (12/(self.ngram-1)) == 0:
-                        text_file.write('\n')
-                    else:
-                        text_file.write(' ')
-            #self.ngram -= 1
-        if self.ngram == 1:
-            ngrams, weights = zip(*self.big.items())
-
-            generated_text = random.choices(ngrams, weights=weights, k=math.ceil(taille/self.ngram))
-
-
-            generated_text = [
-                ngram + ('\n' if (i + 1)*self.ngram % 12 == 0 else ' ')
-                for i, ngram in enumerate(generated_text)
-            ]
-
-            with open(textname, "w", encoding='utf8') as text_file:
-                text_file.write("".join(generated_text))
-
+                text_file.write(' '.join(generated_text))
 
 
     def gen_text_auteur(self, auteur: str, taille: int, textname: str) -> None:
@@ -294,46 +266,27 @@ class TextAn(TextAnCommon):
         if auteur not in self.auteurs:
             print(f"Author '{auteur}' not found.")
             return
-        if self.ngram != 1:
-            generated_text = []
-            etat_courant = random.choice(list(self.markov[auteur].keys()))
-            generated_text.append(etat_courant)
-            for _ in range(math.ceil((taille - 1) / (self.ngram-1))):
-                if etat_courant.split()[-1] in self.markov[auteur]:
-                    next_word_probs = self.markov[auteur][etat_courant.split()[-1]]
+        generated_text = []
+        ngram_initial = random.choice(list(self.markov[auteur].keys()))
+        ngram_courant = ngram_initial
+        generated_text.append(ngram_courant)
+        word_count = self.ngram
 
-                    # Choose the next word based on probabilities
-                    next_word = random.choices(list(next_word_probs.keys()), weights=list(next_word_probs.values()))[0]
-                    generated_text.append(next_word)
-                    if _ < 5:
-                        print(generated_text)
+        for _ in range(math.ceil((taille - 1) / self.ngram)):
+            if ngram_courant not in self.markov[auteur]:
+                ngram_courant = random.choice(list(self.markov[auteur].keys()))
+            next_word_probs = self.markov[auteur][ngram_courant]
+            next_word = random.choices(list(next_word_probs.keys()), weights=list(next_word_probs.values()))[0]
+            generated_text.append(next_word)
+            ngram_courant = next_word
+            word_count += self.ngram
 
-                    # Update the current state for the next iteration
-                    etat_courant = etat_courant.split()[-1] + ' ' + next_word
-
-                else:
-                    break
-            with open(textname, "w", encoding='utf8') as text_file:
-                for i, word in enumerate(generated_text):
-                    text_file.write(word)
-                    if (i + 1) % (12/(self.ngram-1)) == 0:
-                        text_file.write('\n')
-                    else:
-                        text_file.write(' ')
-        if self.ngram == 1:
-            ngrams, weights = zip(*self.mots_auteurs[auteur].items())
-
-
-            generated_text = random.choices(ngrams, weights=weights, k=taille)
-
-
-            generated_text = [
-                ngram + ('\n' if (i + 1) * self.ngram % 12 == 0 else ' ')
-                for i, ngram in enumerate(generated_text)
-            ]
+            if word_count > 15:
+                generated_text.append('\n')
+                word_count = 0
 
             with open(textname, "w", encoding='utf8') as text_file:
-                text_file.write("".join(generated_text))
+                text_file.write(' '.join(generated_text))
 
 
 
@@ -349,27 +302,22 @@ class TextAn(TextAnCommon):
             (il est possible qu'il y ait plus d'un n-gramme au même rang)
         """
 
-        ngrams = self.mots_auteurs[auteur].items()
-        sorted_ngrams_keys = self.quicksort_descending(list(ngrams))
+        frequencies = sorted(set(item[1] for item in self.mots_auteurs[auteur]), reverse=True)
 
-        frequencies = sorted(set(item[1] for item in sorted_ngrams_keys), reverse=True)
-        #print(frequencies)
-        try :
-            target_frequency = frequencies[n-1]
+        try:
+            target_frequency = frequencies[n - 1]
         except IndexError:
             print("index existe pas, n mit a 1 par defaut")
             target_frequency = frequencies[0]
         ngrams_list = []
 
-        for ngram_key, frequency in sorted_ngrams_keys:
+        for ngram_key, frequency in self.mots_auteurs[auteur]:
             if frequency == target_frequency:
-
                 try:
-
                     words = ngram_key.split()
                     ngrams_list.append(words)
                 except KeyError:
-                    print(f"KeyError: Key '{ngram_key}' pas trouve")
+                    print(f"'{ngram_key}' pas trouve")
 
         return ngrams_list
 
@@ -382,19 +330,17 @@ class TextAn(TextAnCommon):
         right = [x for x in arr if x[1] < pivot[1]]
         return self.quicksort_descending(left) + middle + self.quicksort_descending(right)
 
+
     def analyze(self) -> None:
 
-        all = {}
+        everything = {}
         markov_big = {}
-        markov = {}
+
         print("Analyse des textes")
         for auteur in self.auteurs:
+            markov = {}
             aut_files = self.get_aut_files(auteur)
-
-            all_ngram_counts_with_keys = {}
             all_ngram_counts = {}
-            markov[auteur] = {}
-
 
             for oeuvre in aut_files:
                 with open(oeuvre, "r", encoding='utf8') as oeuvre_file:
@@ -422,104 +368,54 @@ class TextAn(TextAnCommon):
                     ngrams = [' '.join(words_filtered[i:i + self.ngram]) for i in
                               range(len(words_filtered) - self.ngram + 1)]
 
-                    # dictionnaire pour les frequences
-
                     ngram_frequencies = {}
 
-                    #utilise cette boucle for pour les cles et mettre en commentaire l'autre
                     for ngram in ngrams:
-
                         ngram_frequencies[ngram] = ngram_frequencies.get(ngram, 0) + 1
-
-                    # pour combiner les ngrams des differentes oeuvres du meme auteur
-                    '''for ngram, frequency in ngram_counts.items():
-                        all_ngram_counts_with_keys[ngram] = all_ngram_counts_with_keys.get(ngram, 0) + frequency'''
 
                     for ngram, frequency in ngram_frequencies.items():
                         all_ngram_counts[ngram] = all_ngram_counts.get(ngram, 0) + frequency
 
+
+                    for i in range(len(ngrams) - self.ngram):
+                        prefix = ngrams[i]
+                        next_ngram = ngrams[i + self.ngram]
+
+                        if prefix not in markov:
+                            markov[prefix] = {}
+                        if next_ngram not in markov[prefix]:
+                            markov[prefix][next_ngram] = 0
+                        markov[prefix][next_ngram] += 1
+
+                        if prefix not in markov_big:
+                            markov_big[prefix] = {}
+                        if next_ngram not in markov_big[prefix]:
+                            markov_big[prefix][next_ngram] = 0
+                        markov_big[prefix][next_ngram] += 1
+
+            for mot_present, transitions in markov.items():
+                sorted_transitions = self.quicksort_descending(list(transitions.items()))
+                markov[mot_present] = dict(sorted_transitions)
+
+
+            self.markov[auteur] = markov
+
+
             for ngram, frequency in all_ngram_counts.items():
-                all[ngram] = all.get(ngram, 0) + frequency
-                words = ngram.split()
-                if (self.ngram != 1):
-
-                    for i in range(len(words) - self.ngram + 1):
-                        mot_present = words[i]
-                        mot_prochain = words[i+1]
-                        for j in range(self.ngram - 2):
-                            mot_prochain += " " + words[i + j + 2]
-
-                        '''if "jean" in markov[auteur]:
-                            print(f'Content of markov[auteur] when the key is "jean":')
-                            print(markov[auteur]["jean"])'''
-
-                        if mot_present not in markov[auteur]:
-                            markov[auteur][mot_present] = {}
-
-                        if mot_prochain not in markov[auteur][mot_present]:
-                            markov[auteur][mot_present][mot_prochain] = frequency
-                        else:
-                            markov[auteur][mot_present][mot_prochain] += frequency
-                        '''if "jean" in markov[auteur]:
-                            print(f'Content of markov[auteur] when the key is "jean":')
-                            print(markov["Balzac"]["jean"])'''
-
-            if (self.ngram != 1):
-                for mot_present, mots_prochains in markov[auteur].items():
-
-                    mots_prochains_2 = {}
-
-                    for mot_prochain, frequency in mots_prochains.items():
-                        mots_prochains_2[mot_prochain] = frequency
-
-                    markov[auteur][mot_present] = mots_prochains_2
-                for mot_present, mots_prochains in markov[auteur].items():
-                    if mot_present not in markov_big:
-                        markov_big[mot_present] = {}
-
-                    for mot_prochain, frequency in mots_prochains.items():
-                        if mot_prochain not in markov_big[mot_present]:
-                            markov_big[mot_present][mot_prochain] = frequency
-                        else:
-                            markov_big[mot_present][mot_prochain] += frequency
-                    '''if "jean" in markov_big:
-                        print(f'Content of markov[auteur] when the key is "jean":')
-                        print(markov_big["jean"])'''
-            if (self.ngram != 1):
-                for mot_present, transitions in markov[auteur].items():
-                    sorted_transitions = self.quicksort_descending(list(transitions.items()))
-                    markov[auteur][mot_present] = dict(sorted_transitions)
-
+                everything[ngram] = everything.get(ngram, 0) + frequency
 
             # pour stocker toutes les informations de chaque auteur sans mots_auteurs
-            self.mots_auteurs[auteur] = all_ngram_counts
-            self.big = all
-            self.markov[auteur] = markov[auteur]
-            #print(self.markov[auteur])
+            ngrams = all_ngram_counts.items()
+            sorted_ngrams_keys = self.quicksort_descending(list(ngrams))
+            self.mots_auteurs[auteur] = sorted_ngrams_keys
 
-            #print sur word
-        if (self.ngram != 1):
-            for mot_present, mots_prochains in markov_big.items():
+            ngrams_big = everything.items()
+            sorted_ngrams_keys_big = self.quicksort_descending(list(ngrams_big))
+            self.big = sorted_ngrams_keys_big
 
-                mots_prochains_2 = {}
 
-                for mot_prochain, frequency in mots_prochains.items():
+        for mot_present, transitions in markov_big.items():
+            sorted_transitions = self.quicksort_descending(list(transitions.items()))
+            markov_big[mot_present] = dict(sorted_transitions)
 
-                    mots_prochains_2[mot_prochain] = frequency
-
-                markov_big[mot_present] = mots_prochains_2
-
-        if (self.ngram != 1):
-            for mot_present, transitions in markov_big.items():
-                sorted_transitions = self.quicksort_descending(list(transitions.items()))
-                markov_big[mot_present] = dict(sorted_transitions)
-
-        #self.markov = markov
-        #print(self.markov)
         self.markov_big = markov_big
-        #print(self.markov["Voltaire"])
-
-
-
-#print word
-
