@@ -22,7 +22,7 @@ import random
             + "python test_textan.py -h" (donne la liste des arguments possibles)
             + "python test_textan.py -v" (mode "verbose", qui indique les valeurs de tous les arguments)
 
-    Copyright 2018-2023, F. Mailhot et Université de Sherbrooke
+    Copyright 2018-2023, F. Mailhot et Université de Sherbrooke 
 """
 
 from textan_common import TextAnCommon
