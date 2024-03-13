@@ -92,6 +92,7 @@ class TextAn(TextAnCommon):
 
         Copyright 2023, F. Mailhot et Université de Sherbrooke
         """
+        #print(dict1)
         print("call de dot_product_dict")
         dot_product = 1.0
 
@@ -231,7 +232,7 @@ class TextAn(TextAnCommon):
         generated_text.append(ngram_courant)
         word_count = self.ngram
 
-        for _ in range(math.ceil((taille - 1)/self.ngram)):
+        for _ in range(math.floor((taille - 1)/self.ngram)):
             if ngram_courant not in self.markov_big:
                 ngram_courant = random.choice(list(self.markov_big.keys()))
             next_word_probs = self.markov_big[ngram_courant]
@@ -245,7 +246,13 @@ class TextAn(TextAnCommon):
                 word_count = 0
 
             with open(textname, "w", encoding='utf8') as text_file:
-                text_file.write(' '.join(generated_text))
+                for word in generated_text:
+                    if word == '\n':
+                        text_file.write('\n')
+
+                    else:
+                        text_file.write(word + ' ')
+
 
 
     def gen_text_auteur(self, auteur: str, taille: int, textname: str) -> None:
@@ -271,6 +278,9 @@ class TextAn(TextAnCommon):
         ngram_courant = ngram_initial
         generated_text.append(ngram_courant)
         word_count = self.ngram
+        if word_count > 15:
+            generated_text.append('\n')
+            word_count = 0
 
         for _ in range(math.ceil((taille - 1) / self.ngram)):
             if ngram_courant not in self.markov[auteur]:
@@ -286,7 +296,12 @@ class TextAn(TextAnCommon):
                 word_count = 0
 
             with open(textname, "w", encoding='utf8') as text_file:
-                text_file.write(' '.join(generated_text))
+                for word in generated_text:
+                    if word == '\n':
+                        text_file.write('\n')
+
+                    else:
+                        text_file.write(word + ' ')
 
 
 
@@ -301,8 +316,9 @@ class TextAn(TextAnCommon):
             ngram (List[Liste[string]]) : Liste de liste de mots composant le n-gramme recherché
             (il est possible qu'il y ait plus d'un n-gramme au même rang)
         """
-
-        frequencies = sorted(set(item[1] for item in self.mots_auteurs[auteur]), reverse=True)
+        ngrams = self.mots_auteurs[auteur]
+        sorted_ngrams_keys = self.quicksort_descending(list(ngrams.items()))
+        frequencies = sorted(set(item[1] for item in sorted_ngrams_keys), reverse=True)
 
         try:
             target_frequency = frequencies[n - 1]
@@ -311,7 +327,7 @@ class TextAn(TextAnCommon):
             target_frequency = frequencies[0]
         ngrams_list = []
 
-        for ngram_key, frequency in self.mots_auteurs[auteur]:
+        for ngram_key, frequency in sorted_ngrams_keys:
             if frequency == target_frequency:
                 try:
                     words = ngram_key.split()
@@ -333,7 +349,7 @@ class TextAn(TextAnCommon):
 
     def analyze(self) -> None:
 
-        everything = {}
+        all = {}
         markov_big = {}
 
         print("Analyse des textes")
@@ -402,16 +418,13 @@ class TextAn(TextAnCommon):
 
 
             for ngram, frequency in all_ngram_counts.items():
-                everything[ngram] = everything.get(ngram, 0) + frequency
+                all[ngram] = all.get(ngram, 0) + frequency
 
             # pour stocker toutes les informations de chaque auteur sans mots_auteurs
-            ngrams = all_ngram_counts.items()
-            sorted_ngrams_keys = self.quicksort_descending(list(ngrams))
-            self.mots_auteurs[auteur] = sorted_ngrams_keys
 
-            ngrams_big = everything.items()
-            sorted_ngrams_keys_big = self.quicksort_descending(list(ngrams_big))
-            self.big = sorted_ngrams_keys_big
+            self.mots_auteurs[auteur] = all_ngram_counts
+
+            self.big = all
 
 
         for mot_present, transitions in markov_big.items():
